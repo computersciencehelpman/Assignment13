@@ -59,29 +59,9 @@ public class UserService {
 			savings.setAccountName("Savings Account");
 			savings.getUsers().add(user);
 			
-			User address = new User();
-			address.getAddress().getAddressLine1();
-			userRepo.save(address);
-			
-			User address2 = new User();
-			address.getAddress().getAddressLine2();
-			userRepo.save(address2);
-			
-			User city = new User();
-			city.getAddress().getCity();
-			userRepo.save(city);
-			
-			User region = new User();
-			region.getAddress().getRegion();
-			userRepo.save(region);
-			
-			User country = new User();
-			country.getAddress().getCountry();
-			userRepo.save(country);
-			
-			User zipCode = new User();
-			zipCode.getAddress().getZipCode();
-			userRepo.save(zipCode);
+		if(user.getAddress() != null) {
+			userRepo.findAllUsersWithAccountsAndAddresses();
+		}
 			
 			user.getAccounts().add(checking);
 			user.getAccounts().add(savings);
