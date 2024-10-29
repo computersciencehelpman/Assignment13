@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:inline="text">Account #[[${account.accountId}]]</title>
+</head>
+<body>
+    <h1>Account #[[${account.accountId}]]</h1>
+    
+    <form th:action="@{/users/{userId}/accounts/{accountId}(userId=${userId}, accountId=${account.accountId})}" method="post">
+        <div>
+            <label>Account Name:</label>
+           <input type="text" th:field="*{accountName}" />
+        </div>
+        <div>	
+        	<input type="submit" value="Save Account" />
+        </div>
+    </form>
+    
+    <hr />
+    <a th:href="@{/users/{userId}(userId=${userId})}">Back</a>
+</body>
+</html>

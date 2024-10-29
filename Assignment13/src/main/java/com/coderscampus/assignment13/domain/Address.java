@@ -18,6 +18,11 @@ public class Address {
 	private String country;
 	private String zipCode;
 	
+    public Address() {
+    	
+    }
+
+	
 	@Id
 	public Long getUserId() {
 		return userId;
