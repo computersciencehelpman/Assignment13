@@ -78,27 +78,16 @@ public class UserController {
 		return "redirect:/users";
 	}
 	
-//	@PostMapping("/users/{userId}/accounts")
-//	public String createNewAccount(@PathVariable Long userId, Model model) {
-//		
-//		Account newAccount = userService.createAccountForUser(userId);
-//		
-//		Long newAccountId = newAccount.getAccountId();
-//		
-//		return "redirect:/users/" + userId + "/accounts/" + newAccountId;
-//	}
-	
 
 	@PostMapping("/users/{userId}/accounts")
 	public String createOrUpdateAccount(@PathVariable Long userId, @ModelAttribute Account account) {
+	    Account savedAccount;
 	    if (account.getAccountId() == null) {
-	        // Create new account if accountId is not provided
-	        userService.createAccountForUser(userId);
+	        savedAccount = userService.createAccountForUser(userId);
 	    } else {
-	        // Update existing account
-	        userService.saveAccount(userId, account);
+	        savedAccount = userService.saveAccount(account);
 	    }
-	    return "redirect:/users/" + userId + "/accounts/" + account.getAccountId();
+	    return "redirect:/users/" + userId + "/accounts/" + savedAccount.getAccountId();
 	}
 
 	
@@ -113,18 +102,23 @@ public class UserController {
 	@GetMapping("/users/{userId}/accounts/{accountId}")
 	public String getOneAccount(ModelMap model, @PathVariable Long userId, @PathVariable Long accountId) {
 	    Account account = userService.findByAccountId(accountId);
+	    
+	    if (account == null) {
+	        account = new Account();
+	    }
+	    
 	    model.addAttribute("account", account);
 	    model.addAttribute("userId", userId);
+	    
 	    return "account";
 	}
-	
+
+
 	@PostMapping("/users/{userId}/accounts/{accountId}")
 	public String postOneAccount(@PathVariable Long userId, @PathVariable Long accountId, Account account) {
-	    account.setAccountId(accountId);
-	    userService.saveAccount(account);
-	    userService.updateAccount(userId, accountId, account);
-	    return "redirect:/users/" + userId + "/accounts/" + accountId;
+		account.setAccountId(accountId);
+		userService.saveAccount(account);
+		return "redirect:/users/" + userId + "/accounts/" + accountId;
 	}
-	
 
 }
