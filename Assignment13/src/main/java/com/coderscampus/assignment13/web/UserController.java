@@ -31,6 +31,13 @@ public class UserController {
 		return "register";
 	}
 	
+	@GetMapping("/users/{userId}/accounts/new")
+	public String createAccountForm(@PathVariable Long userId, Model model) {
+	    model.addAttribute("userId", userId);
+	    model.addAttribute("account", new Account()); 
+	    return "account";
+	}
+
 
 	
 	@PostMapping("/register")
@@ -69,7 +76,7 @@ public class UserController {
 	@PostMapping("/users/{userId}")
 	public String postOneUser (User user) {
 		userService.saveUser(user);
-		return "redirect:/users/"+user.getUserId();
+		return "redirect:/users/";
 	}
 	
 	@PostMapping("/users/{userId}/delete")
@@ -79,16 +86,21 @@ public class UserController {
 	}
 	
 
+	
 	@PostMapping("/users/{userId}/accounts")
 	public String createOrUpdateAccount(@PathVariable Long userId, @ModelAttribute Account account) {
 	    Account savedAccount;
 	    if (account.getAccountId() == null) {
 	        savedAccount = userService.createAccountForUser(userId);
+	        savedAccount.setAccountName(account.getAccountName()); 
+	        userService.saveAccount(savedAccount);
 	    } else {
 	        savedAccount = userService.saveAccount(account);
 	    }
 	    return "redirect:/users/" + userId + "/accounts/" + savedAccount.getAccountId();
 	}
+
+
 
 	
 	@GetMapping("/users/{userId}/accounts/{accountId}/details")
@@ -96,23 +108,47 @@ public class UserController {
 		Account account = userService.findByAccountId(accountId);
 		model.addAttribute("account", account);
 		model.addAttribute("userId", userId);
-		return "accountDetails";
+		return "account";
 	}
 	
-	@GetMapping("/users/{userId}/accounts/{accountId}")
-	public String getOneAccount(ModelMap model, @PathVariable Long userId, @PathVariable Long accountId) {
-	    Account account = userService.findByAccountId(accountId);
-	    
-	    if (account == null) {
-	        account = new Account();
-	    }
-	    
-	    model.addAttribute("account", account);
-	    model.addAttribute("userId", userId);
-	    
-	    return "account";
+	@PostMapping("/users/{userId}/accounts/{accountId}/save")
+	public String saveAccount(@PathVariable Long userId, @PathVariable Long accountId, @ModelAttribute Account account) {
+	    account.setAccountId(accountId);
+	    userService.saveAccount(userId, account); // assuming this method updates specific fields
+	    return "redirect:/users/" + userId;
+	}
+	
+
+	@PostMapping("/users/save")
+	public String saveUser(@PathVariable Long userId, @PathVariable Long accountId, @ModelAttribute Account account) {
+		User user = new User();
+		user.setUserId(userId);
+		userService.saveAccount(account);
+		
+		return "redirect:/users";
 	}
 
+	@GetMapping("/users/{userId}/accounts/{accountId}")
+	public String showAccountForm(@PathVariable Long userId, @PathVariable Long accountId, Model model) {
+	    User user = userService.findById(userId);
+	    Account account = new Account();
+	    
+	    model.addAttribute("user", user);
+	    model.addAttribute("account", account);
+	    
+	    return "account"; 
+	}
+	
+	@GetMapping("/users/{userId}/accounts/{accountId}/info")
+	public String getOneAccount(ModelMap model, @PathVariable Long userId, @PathVariable Long accountId) {
+	    Account account = userService.findByAccountId(accountId);
+	    if (account == null) {
+	        return "redirect:/users/" + userId + "/accounts/new"; 
+	    }
+	    model.addAttribute("account", account);
+	    model.addAttribute("userId", userId);
+	    return "account";
+	}
 
 	@PostMapping("/users/{userId}/accounts/{accountId}")
 	public String postOneAccount(@PathVariable Long userId, @PathVariable Long accountId, Account account) {

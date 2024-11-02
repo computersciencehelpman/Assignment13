@@ -6,19 +6,21 @@
 </head>
 <body>
     <h1>Account #[[${account.accountId != null ? account.accountId : 'New'}]]</h1>
-    
-    <form th:action="@{/users/{userId}/accounts/{accountId}(userId=${userId}, accountId=${account.accountId})}" method="post">
+
+    <!-- Form to create or update an account -->
+    <form th:action="@{/users/{userId}/accounts(userId=${userId})}" method="post" th:object="${account}">
         <div>
             <label>Account Name:</label>
-            <input type="text" th:field="*{accountName}" />
+            <input type="text" th:field="*{accountName}" placeholder="Enter Account Name" required />
         </div>
         <div>
-            <input type="submit" value="Save Account" />
+            <button type="submit">Save Account</button>
         </div>
     </form>
-    
+
     <hr/>
-    
+
+   
     <a th:href="@{/users/{userId}(userId=${userId})}">Back</a>
 </body>
 </html>

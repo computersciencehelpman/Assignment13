@@ -115,20 +115,28 @@ public class UserService {
 		userRepo.deleteById(userId);
 	}
 	
+	public void saveAccount(Long accountId, Account account) {
+		System.out.println("Saving account: " + account);
+        Account existingAccount = accountRepo.findById(accountId)
+            .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+        existingAccount.setAccountName(account.getAccountName()); 
+        accountRepo.save(existingAccount); 
+        
+        User user= userRepo.findById(accountId)
+				 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<User> users = new ArrayList<>();
+        users.add(user);
+        account.setUsers(users);
+
+        accountRepo.save(account);
+    }
+	
 	public Account saveAccount(Account account) {
+		
 		return accountRepo.save(account);
 	}
 	
-	public void saveAccount(Long userId, Account account) {
-		User user= userRepo.findById(userId)
-								 .orElseThrow(() -> new RuntimeException("User not found"));
-		
-		List<User> users = new ArrayList<>();
-		users.add(user);
-		account.setUsers(users);
-		
-		accountRepo.save(account);
-	}
 
 	public Account updateAccount(Long userId, Long accountId, Account account) {
 		return accountRepo.save(account);

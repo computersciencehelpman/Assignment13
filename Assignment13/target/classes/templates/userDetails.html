@@ -50,7 +50,7 @@
 <body>
     <h1>User Details</h1>
 
-    <form action="" method="post">
+    <form th:action="@{/users/{userId}(userId=${user.userId})}" method="post" th:object="${user}">
         <div>
             <label>Username:</label> 
             <input type="text" th:field="${user.username}" />
@@ -90,27 +90,28 @@
     		<label>Zip Code:</label> 
     		<input type="text" th:field="${user.address.zipCode}" />
 		</div>
-
-      
-        <div>
-            <input type="submit" value="Update User Account" />
-        </div>
+        <input type="submit" value="Update User Account" /> 
     </form>
 
    
     <form th:action="@{/users/{userId}/delete(userId=${user.userId})}" method="post">
-        <input type="submit" value="Delete User Account" />
-    </form>
+    	<input type="submit" value="Delete User Account" />
+	</form>
 
-    
     <div>
-        <h3>Accounts</h3>
-        <div th:each="account : ${user.accounts}">
-            <a th:href="@{/users/{userId}/accounts/{accountId}(userId=${user.userId}, accountId=${account.accountId})}" 
-               th:text="${account.accountName}">Account Name</a>
-        </div>
-    </div>
-
+    	<h3>Accounts</h3>
+    	<ul>
+        	<li th:each="account : ${user.accounts}">
+           	 <a th:href="@{/users/{userId}/accounts/{accountId}(userId=${user.userId}, accountId=${account.accountId})}"
+   				th:text="${account.accountName}">Account Name</a>
+           	
+        	</li>
+    	</ul>
+    	
+    
+	</div>
+    
+    
     <form th:action="@{/users/{userId}/accounts(userId=${user.userId})}" method="post">
     	<input type="submit" value="Create New Bank Account" />
 	</form>
