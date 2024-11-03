@@ -64,10 +64,9 @@ public class UserService {
 	}
 	
 	public Account findByAccountId(Long accountId) {
-	    Optional<Account> accountOpt = accountRepo.findById(accountId);
-	    Account account = accountOpt.orElse(new Account()); 
-	    return account;
+	    return accountRepo.findById(accountId).orElse(new Account());
 	}
+
 
 	   public Account createAccountForUser(Long userId) {
 	       
@@ -131,6 +130,18 @@ public class UserService {
 
         accountRepo.save(account);
     }
+	
+	public void saveOrUpdateAccount(Long userId, Account account) {
+	    User user = userRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
+	    List<User> users = new ArrayList<>(account.getUsers());
+	    users.add(user);
+	    account.setUsers(users);
+
+	    accountRepo.save(account);
+	}
+
+
 	
 	public Account saveAccount(Account account) {
 		
