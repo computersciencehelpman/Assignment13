@@ -8,13 +8,14 @@
     <h1>Account #[[${account.accountId}]]</h1>
 
 
-   <form th:action="@{/users/{userId}/accounts(userId=${userId})}" method="post" th:object="${account}">
+   <form th:action="@{/users/{userId}/accounts/{accountId}/save(userId=${userId}, accountId=${account.accountId})}" method="post" th:object="${account}">
     	<div>
         	<label>Account Name:</label>
         	<input type="text" th:field="*{accountName}" required />
     	</div>
-   		 <button type="submit">Save Account</button>
+    	<button type="submit">Save Account</button>
 	</form>
+   
 
     <hr/>
 

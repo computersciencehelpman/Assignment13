@@ -112,10 +112,10 @@ public class UserController {
 		return "account";
 	}
 	
-	@PostMapping("/users/{userId}/accounts/save")
+	@PostMapping("/users/{userId}/accounts/{accountId}/save")
 	public String saveAccount(@PathVariable Long userId, @PathVariable Long accountId, @ModelAttribute Account account) {
-	    account.setAccountId(accountId);
-	    userService.saveAccount(userId, account); System.out.println("Account saved successfully for account ID: " + accountId);
+	    userService.saveAccount(account);
+	    System.out.println("Account saved successfully for account ID: " + accountId);
 	    return "redirect:/users/" + userId;
 	}
 	
