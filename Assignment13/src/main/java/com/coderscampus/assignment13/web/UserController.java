@@ -132,7 +132,7 @@ public class UserController {
 	@GetMapping("/users/{userId}/accounts/{accountId}")
 	public String showAccountForm(@PathVariable Long userId, @PathVariable Long accountId, Model model) {
 	    User user = userService.findById(userId);
-	    Account account = new Account();
+	    Account account = userService.findByAccountId(accountId);
 	    
 	    model.addAttribute("user", user);
 	    model.addAttribute("account", account);
