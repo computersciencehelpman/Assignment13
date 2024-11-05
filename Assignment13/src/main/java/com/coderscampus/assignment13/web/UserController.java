@@ -1,5 +1,6 @@
 package com.coderscampus.assignment13.web;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Set;
 
@@ -60,17 +61,36 @@ public class UserController {
 	}
 	
 	@GetMapping("/users/{userId}")
-	public String getOneUser (ModelMap model, @PathVariable Long userId) {
+	public String getOneUser(ModelMap model, @PathVariable Long userId) {
 	    User user = userService.findById(userId);
 	    
 	    if (user.getAddress() == null) {
 	        user.setAddress(new Address());
 	    }
 	    
+	    // Initialize accounts list if null to avoid NullPointerException
+	    if (user.getAccounts() == null) {
+	        user.setAccounts(new ArrayList<>());
+	    }
+	    
 	    model.addAttribute("user", user);
-	    model.put("users", Arrays.asList(user));
+	    model.addAttribute("accounts", user.getAccounts());
 	    return "userDetails";  
 	}
+	
+//	@GetMapping("/users/{userId}")
+//	public String getOneUser (ModelMap model, @PathVariable Long userId) {
+//	    User user = userService.findById(userId);
+//	    
+//	    if (user.getAddress() == null) {
+//	        user.setAddress(new Address());
+//	    }
+//	    
+//	    model.addAttribute("user", user);
+//	    model.put("users", Arrays.asList(user));
+//	    model.addAttribute("accounts", user.getAccounts());
+//	    return "userDetails";  
+//	}
 
 	
 	@PostMapping("/users/{userId}")

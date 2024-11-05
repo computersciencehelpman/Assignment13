@@ -100,15 +100,12 @@
 
     <div>
     	<h3>Accounts</h3>
-    	<ul>
-        	<li th:each="account : ${user.accounts}">
-           	 <a th:href="@{/users/{userId}/accounts/{accountId}(userId=${user.userId}, accountId=${account.accountId})}"
-   				th:text="${account.accountName}">Account Name</a>
-           	
-        	</li>
-    	</ul>
-    	
-    
+		<ul>
+    		<li th:each="account : ${accounts}">
+        		<a th:href="@{/users/{userId}/accounts/{accountId}(userId=${user.id}, accountId=${account.accountId})}"
+           		th:text="${account.accountName}">Account Name</a>
+    		</li>
+		</ul> 
 	</div>
     
     
