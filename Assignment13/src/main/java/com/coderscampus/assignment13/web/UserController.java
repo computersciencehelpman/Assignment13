@@ -75,6 +75,7 @@ public class UserController {
 	    
 	    model.addAttribute("user", user);
 	    model.addAttribute("accounts", user.getAccounts());
+	    System.out.println("Confirm");
 	    return "userDetails";  
 	}
 	
