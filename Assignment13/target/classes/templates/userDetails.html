@@ -102,7 +102,7 @@
     	<h3>Accounts</h3>
 		<ul>
     		<li th:each="account : ${accounts}">
-        		<a th:href="@{/users/{userId}/accounts/{accountId}(userId=${user.userId}, accountId=${account.accountId})}"></a>
+        		<a th:href="@{/users/{userId}/accounts/{accountId}(userId=${user.userId}, accountId=${account.accountId})}">[[${account.accountName}]]</a>
     		</li>
 		</ul> 
 	</div>
