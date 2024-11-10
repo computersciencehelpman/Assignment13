@@ -26,11 +26,20 @@ public class User {
 	private String username;
 	private String password;
 	private String name;
+	private String account;
 	private LocalDate createdDate;
 	private List<Account> accounts = new ArrayList<>();
 	
 	@OneToOne(cascade = CascadeType.ALL)
 	private Address address;
+	
+	public String getAccount() {
+		return account;
+	}
+	public void setAccount(String account) {
+		this.account = account;
+	}
+
 	
 	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
 	public Long getUserId() {
