@@ -105,23 +105,18 @@ public class UserController {
 		return "redirect:/users";
 	}
 	
-
-	
-//	@PostMapping("/users/{userId}/accounts")
-//	public String createOrUpdateAccount(@PathVariable Long userId, @ModelAttribute Account account) {
-//	    Account savedAccount;
-//	    if (account.getAccountId() == null) {
-//	        savedAccount = userService.createAccountForUser(userId);
-//	        savedAccount.setAccountName(account.getAccountName()); 
-//	        userService.saveAccount(savedAccount);
-//	    } else {
-//	        savedAccount = userService.saveAccount(account);
-//	    }
-//	    return "redirect:/users/" + userId + "/accounts/" + savedAccount.getAccountId();
-//	}
-
-
-
+	@PostMapping("/users/{userId}/accounts")
+	public String createOrUpdateAccount(@PathVariable Long userId, @ModelAttribute Account account) {
+	    Account savedAccount;
+	    if (account.getAccountId() == null) {
+	        savedAccount = userService.createAccountForUser(userId);
+	        savedAccount.setAccountName(account.getAccountName()); 
+	        userService.saveAccount(savedAccount);
+	    } else {
+	        savedAccount = userService.saveAccount(account);
+	    }
+	    return "redirect:/users/" + userId + "/accounts/" + savedAccount.getAccountId();
+	}
 	
 	@GetMapping("/users/{userId}/accounts/{accountId}/details")
 	public String showAccountDetails(@PathVariable Long userId, @PathVariable Long accountId, Model model) {

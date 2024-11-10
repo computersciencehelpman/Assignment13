@@ -97,17 +97,17 @@
         <input type="submit" value="Delete User Account" />
     </form>
 
-     <div>
-        <h3>Accounts</h3>
-        <ul>
-            <li th:each="account : ${user.accounts}">
-                <a th:href="@{/users/{userId}/accounts/{accountId}(userId=${user.userId}, accountId=${account.accountId})}">
-                    [[${user.account.accountName}]]
-                </a>
-            </li>
-        </ul> 
-    </div>
-
+	<div>
+    	<h3>Accounts</h3>
+    	<ul>
+        	<li th:each="account : ${user.accounts}">
+            	<a th:href="@{/users/{userId}/accounts/{accountId}(userId=${user.userId}, accountId=${account.accountId})}">
+                	[[${account.accountName}]]
+            	</a>
+        	</li>
+    	</ul>
+	</div>
+	
     <form th:action="@{/users/{userId}/accounts(userId=${user.userId})}" method="post">
         <input type="submit" value="Create New Bank Account" />
     </form>
