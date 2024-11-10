@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -15,15 +16,20 @@ import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
-@Entity // Class name = User, DB Table name = user
+@Entity 
 @Table(name = "users")
 public class User {
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long userId;
+	
 	private String username;
 	private String password;
 	private String name;
 	private LocalDate createdDate;
 	private List<Account> accounts = new ArrayList<>();
+	
+	@OneToOne(cascade = CascadeType.ALL)
 	private Address address;
 	
 	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -14,8 +14,5 @@ public interface AccountRepository extends JpaRepository<Account, Long>{
 
 	// select * from users where accountName = :accountName
 		List<Account> findByAccountName(String accountName);
-
-		
-		
-		
+	
 }

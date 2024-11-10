@@ -13,6 +13,7 @@ import com.coderscampus.assignment13.domain.Account;
 import com.coderscampus.assignment13.domain.Address;
 import com.coderscampus.assignment13.domain.User;
 import com.coderscampus.assignment13.repository.AccountRepository;
+import com.coderscampus.assignment13.repository.AddressRepository;
 import com.coderscampus.assignment13.repository.UserRepository;
 
 @Service
@@ -22,6 +23,9 @@ public class UserService {
 	private UserRepository userRepo;
 	@Autowired
 	private AccountRepository accountRepo;
+	@Autowired
+	private AddressRepository addressRepo;
+	
 	
 	public List<User> findByUsername(String username) {
 		return userRepo.findByUsername(username);
@@ -91,24 +95,48 @@ public class UserService {
 	            throw new RuntimeException("User not found with ID: " + userId);
 	        }
 	    }
-	public User saveUser(User user) {
-		if (user.getUserId() == null) {
-			Account checking = new Account();
-			checking.setAccountName("Checking Account");
-			checking.getUsers().add(user);
-			
-			Account savings = new Account();
-			savings.setAccountName("Savings Account");
-			savings.getUsers().add(user);
-			
-			user.getAccounts().add(checking);
-			user.getAccounts().add(savings);
-			
-			accountRepo.save(checking);
-			accountRepo.save(savings);
+	   public User saveUser(User user) {
+		    if (user.getUserId() != null) {
+		     
+		        User existingUser = userRepo.findById(user.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
+
+		        
+		        existingUser.setUsername(user.getUsername());
+		        existingUser.setName(user.getName());
+	
+
+		        
+		        if (user.getAddress() != null) {
+		            user.getAddress().setUser(existingUser);
+		            addressRepo.save(user.getAddress());
+		        }
+
+		        return userRepo.save(existingUser);
+		    } else {
+		       
+		        if (user.getAddress() != null) {
+		            user.getAddress().setUser(user);
+		            addressRepo.save(user.getAddress());
+		        }
+
+		        Account checking = new Account();
+		        checking.setAccountName("Checking Account");
+		        checking.getUsers().add(user);
+
+		        Account savings = new Account();
+		        savings.setAccountName("Savings Account");
+		        savings.getUsers().add(user);
+
+		        user.getAccounts().add(checking);
+		        user.getAccounts().add(savings);
+
+		        accountRepo.save(checking);
+		        accountRepo.save(savings);
+
+		        return userRepo.save(user);
+		    }
 		}
-		return userRepo.save(user);
-	}
+
 
 	public void delete(Long userId) {
 		userRepo.deleteById(userId);

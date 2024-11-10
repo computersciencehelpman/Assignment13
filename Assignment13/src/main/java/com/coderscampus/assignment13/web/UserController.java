@@ -60,6 +60,18 @@ public class UserController {
 		return "users";
 	}
 	
+	@PostMapping("/users/{userId}/update")
+	public String updateUser(@PathVariable Long userId, @ModelAttribute User user) {
+	    User existingUser = userService.findById(userId);
+	    existingUser.setUsername(user.getUsername());
+	    existingUser.setName(user.getName());
+	    userService.saveUser(existingUser);
+	    System.out.println("Updating user "+ userId);
+	    return "redirect:/users";
+	}
+
+
+	
 	@GetMapping("/users/{userId}")
 	public String getOneUser(ModelMap model, @PathVariable Long userId) {
 	    User user = userService.findById(userId);
@@ -68,7 +80,7 @@ public class UserController {
 	        user.setAddress(new Address());
 	    }
 	    
-	    // Initialize accounts list if null to avoid NullPointerException
+	    
 	    if (user.getAccounts() == null) {
 	        user.setAccounts(new ArrayList<>());
 	    }
@@ -78,24 +90,11 @@ public class UserController {
 	    System.out.println("Confirm");
 	    return "userDetails";  
 	}
-	
-//	@GetMapping("/users/{userId}")
-//	public String getOneUser (ModelMap model, @PathVariable Long userId) {
-//	    User user = userService.findById(userId);
-//	    
-//	    if (user.getAddress() == null) {
-//	        user.setAddress(new Address());
-//	    }
-//	    
-//	    model.addAttribute("user", user);
-//	    model.put("users", Arrays.asList(user));
-//	    model.addAttribute("accounts", user.getAccounts());
-//	    return "userDetails";  
-//	}
 
 	
 	@PostMapping("/users/{userId}")
-	public String postOneUser (User user) {
+	public String postOneUser (@PathVariable Long userId, @ModelAttribute User user) {
+		user.setUserId(userId); 
 		userService.saveUser(user);
 		return "redirect:/users/";
 	}
@@ -108,18 +107,18 @@ public class UserController {
 	
 
 	
-	@PostMapping("/users/{userId}/accounts")
-	public String createOrUpdateAccount(@PathVariable Long userId, @ModelAttribute Account account) {
-	    Account savedAccount;
-	    if (account.getAccountId() == null) {
-	        savedAccount = userService.createAccountForUser(userId);
-	        savedAccount.setAccountName(account.getAccountName()); 
-	        userService.saveAccount(savedAccount);
-	    } else {
-	        savedAccount = userService.saveAccount(account);
-	    }
-	    return "redirect:/users/" + userId + "/accounts/" + savedAccount.getAccountId();
-	}
+//	@PostMapping("/users/{userId}/accounts")
+//	public String createOrUpdateAccount(@PathVariable Long userId, @ModelAttribute Account account) {
+//	    Account savedAccount;
+//	    if (account.getAccountId() == null) {
+//	        savedAccount = userService.createAccountForUser(userId);
+//	        savedAccount.setAccountName(account.getAccountName()); 
+//	        userService.saveAccount(savedAccount);
+//	    } else {
+//	        savedAccount = userService.saveAccount(account);
+//	    }
+//	    return "redirect:/users/" + userId + "/accounts/" + savedAccount.getAccountId();
+//	}
 
 
 
@@ -137,18 +136,33 @@ public class UserController {
 	public String saveAccount(@PathVariable Long userId, @PathVariable Long accountId, @ModelAttribute Account account) {
 	    userService.saveAccount(account);
 	    System.out.println("Account saved successfully for account ID: " + accountId);
-	    return "redirect:/users/" + userId;
+	    return "redirect:/users/" + userId; // Ensure this redirects correctly
 	}
-	
 
+	
+//	@PostMapping("/users/{userId}/accounts/{accountId}/save")
+//	public String saveAccount(@PathVariable Long userId, @PathVariable Long accountId, @ModelAttribute Account account) {
+//	    userService.saveAccount(account);
+//	    System.out.println("Account saved successfully for account ID: " + accountId);
+//	    return "redirect:/users/" + userId;
+//	}
+	
 	@PostMapping("/users/save")
-	public String saveUser(@PathVariable Long userId, @PathVariable Long accountId, @ModelAttribute Account account) {
-		User user = new User();
-		user.setUserId(userId);
-		userService.saveAccount(account);
-		System.out.println("Account saved successfully for user ID: " + userId);
-		return "redirect:/users";
+	public String saveUser(@ModelAttribute User user) {
+	    userService.saveUser(user);
+	    System.out.println("User saved successfully for user ID: " + user.getUserId());
+	    return "redirect:/users";
 	}
+
+
+//	@PostMapping("/users/save")
+//	public String saveUser(@PathVariable Long userId, @PathVariable Long accountId, @ModelAttribute Account account) {
+//		User user = new User();
+//		user.setUserId(userId);
+//		userService.saveAccount(account);
+//		System.out.println("Account saved successfully for user ID: " + userId);
+//		return "redirect:/users";
+//	}
 
 	@GetMapping("/users/{userId}/accounts/{accountId}")
 	public String showAccountForm(@PathVariable Long userId, @PathVariable Long accountId, Model model) {
@@ -174,10 +188,25 @@ public class UserController {
 	}
 
 	@PostMapping("/users/{userId}/accounts/{accountId}")
-	public String postOneAccount(@PathVariable Long userId, @PathVariable Long accountId, Account account) {
-		account.setAccountId(accountId);
-		userService.saveAccount(account);
-		return "redirect:/users/" + userId + "/accounts/" + accountId;
+	public String postOneAccount(@PathVariable Long userId, @PathVariable(required = false) Long accountId, @ModelAttribute Account account) {
+	    if (accountId == null || account.getAccountId() == null) {
+	       
+	        Account newAccount = userService.createAccountForUser(userId);
+	        newAccount.setAccountName(account.getAccountName());
+	        userService.saveAccount(newAccount);
+	        System.out.println("New account created successfully for user ID: " + userId);
+	        return "redirect:/users/" + userId + "/accounts/" + newAccount.getAccountId();
+	    } else {
+	        
+	        Account existingAccount = userService.findByAccountId(accountId);
+	        if (existingAccount != null) {
+	            existingAccount.setAccountName(account.getAccountName());
+	            userService.saveAccount(existingAccount);
+	            System.out.println("Account updated successfully for account ID: " + accountId);
+	        }
+	        return "redirect:/users/" + userId + "/accounts/" + accountId;
+	    }
 	}
+
 
 }
