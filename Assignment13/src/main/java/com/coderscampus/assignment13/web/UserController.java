@@ -106,8 +106,8 @@ public class UserController {
 	}
 	
 	@PostMapping("/users/{userId}/accounts")
-	public String createOrUpdateAccount(@PathVariable Long userId, @ModelAttribute Account account) {
-	    Account savedAccount;
+	public String createOrUpdateAccount(@PathVariable Long userId, @ModelAttribute Account account) { 
+		Account savedAccount;
 	    if (account.getAccountId() == null) {
 	        savedAccount = userService.createAccountForUser(userId);
 	        savedAccount.setAccountName(account.getAccountName()); 
@@ -115,6 +115,7 @@ public class UserController {
 	    } else {
 	        savedAccount = userService.saveAccount(account);
 	    }
+	 
 	    return "redirect:/users/" + userId + "/accounts/" + savedAccount.getAccountId();
 	}
 	
@@ -131,7 +132,7 @@ public class UserController {
 	public String saveAccount(@PathVariable Long userId, @PathVariable Long accountId, @ModelAttribute Account account) {
 	    userService.saveAccount(account);
 	    System.out.println("Account saved successfully for account ID: " + accountId);
-	    return "redirect:/users/" + userId; // Ensure this redirects correctly
+	    return "redirect:/users/" + userId; 
 	}
 
 	
@@ -161,13 +162,15 @@ public class UserController {
 
 	@GetMapping("/users/{userId}/accounts/{accountId}")
 	public String showAccountForm(@PathVariable Long userId, @PathVariable Long accountId, Model model) {
-	    User user = userService.findById(userId);
+		System.out.println("showAccountForm");
+		User user = userService.findById(userId);
 	    Account account = userService.findByAccountId(accountId);
 	    
 	    model.addAttribute("user", user);
 	    model.addAttribute("account", account);
 
 	    System.out.println("Account Id: "+ accountId);
+	    System.out.println("User Id: "+ userId);
 	    return "account"; 
 	}
 	
