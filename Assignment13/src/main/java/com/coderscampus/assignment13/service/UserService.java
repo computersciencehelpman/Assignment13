@@ -71,30 +71,47 @@ public class UserService {
 	    return accountRepo.findById(accountId).orElse(new Account());
 	}
 
+	public Account createAccountForUser(Long userId) {
+	    User user = userRepo.findById(userId)
+	            .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
-	   public Account createAccountForUser(Long userId) {
-	       
-	        Optional<User> optionalUser = userRepo.findById(userId);
+	    Account newAccount = new Account();
+	    newAccount.setAccountName("New Account");
 
-	        if (optionalUser.isPresent()) {
-	            User user = optionalUser.get();
-	            
-	           
-	            Account newAccount = new Account();
-	            newAccount.setAccountName("New Account"); 
-	            
-	            List<User> users = new ArrayList<>();
-	            users.add(user);
-	            newAccount.setUsers(users);
-	            
-	            
-	            accountRepo.save(newAccount);
-	            
-	            return newAccount;
-	        } else {
-	            throw new RuntimeException("User not found with ID: " + userId);
-	        }
-	    }
+
+	    List<User> users = new ArrayList<>();
+	    users.add(user);
+	    newAccount.setUsers(users);
+
+	    
+	    return accountRepo.save(newAccount);
+	}
+
+
+
+//	   public Account createAccountForUser(Long userId) {
+//	       
+//	        Optional<User> optionalUser = userRepo.findById(userId);
+//
+//	        if (optionalUser.isPresent()) {
+//	            User user = optionalUser.get();
+//	            
+//	           
+//	            Account newAccount = new Account();
+//	            newAccount.setAccountName("New Account"); 
+//	            
+//	            List<User> users = new ArrayList<>();
+//	            users.add(user);
+//	            newAccount.setUsers(users);
+//	            
+//	            
+//	            accountRepo.save(newAccount);
+//	            
+//	            return newAccount;
+//	        } else {
+//	            throw new RuntimeException("User not found with ID: " + userId);
+//	        }
+//	    }
 	   public User saveUser(User user) {
 		    if (user.getUserId() != null) {
 		     
@@ -142,23 +159,23 @@ public class UserService {
 		userRepo.deleteById(userId);
 	}
 	
-	public void saveAccount(Long accountId, Account account) {
-		System.out.println("Saving account: " + account);
-        Account existingAccount = accountRepo.findById(accountId)
-            .orElseThrow(() -> new IllegalArgumentException("Account not found"));
-        existingAccount.setAccountName(account.getAccountName()); 
-        accountRepo.save(existingAccount); 
-        
-        User user= userRepo.findById(accountId)
-				 .orElseThrow(() -> new RuntimeException("User not found"));
-
-        List<User> users = new ArrayList<>();
-        users.add(user);
-        account.setUsers(users);
-
-        accountRepo.save(account);
-    }
-	
+//	public void saveAccount(Long accountId, Account account) {
+//		System.out.println("Saving account: " + account);
+//        Account existingAccount = accountRepo.findById(accountId)
+//            .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+//        existingAccount.setAccountName(account.getAccountName()); 
+//        accountRepo.save(existingAccount); 
+//        
+//        User user= userRepo.findById(accountId)
+//				 .orElseThrow(() -> new RuntimeException("User not found"));
+//
+//        List<User> users = new ArrayList<>();
+//        users.add(user);
+//        account.setUsers(users);
+//
+//        accountRepo.save(account);
+//    }
+//	
 	public void saveOrUpdateAccount(Long userId, Account account) {
 	    User user = userRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -169,7 +186,17 @@ public class UserService {
 	    accountRepo.save(account);
 	}
 
+	public void saveAccount(Long accountId, Account account) {
+	   
+	    Account existingAccount = accountRepo.findById(accountId)
+	        .orElseThrow(() -> new IllegalArgumentException("Account not found"));
 
+	   
+	    existingAccount.setAccountName(account.getAccountName());
+
+	
+	    accountRepo.save(existingAccount); 
+	}	
 	
 	public Account saveAccount(Account account) {
 		
