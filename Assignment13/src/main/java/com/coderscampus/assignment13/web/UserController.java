@@ -109,6 +109,7 @@ public class UserController {
 	@PostMapping("/users/{userId}/accounts")
 	public String createOrUpdateAccount(@PathVariable Long userId, @ModelAttribute Account account) {
 	    User user = userService.findById(userId);
+	    System.out.println("User fetched: " + user);
 	    Account savedAccount;
 
 	    if (account.getAccountId() == null) { 
@@ -131,6 +132,8 @@ public class UserController {
 	
 	@GetMapping("/users/{userId}/accounts/{accountId}/details")
 	public String showAccountDetails(@PathVariable Long userId, @PathVariable Long accountId, Model model) {
+		System.out.println("userId: " + userId);
+	    System.out.println("accountId: " + accountId);
 		Account account = userService.findByAccountId(accountId);
 		model.addAttribute("account", account);
 		model.addAttribute("userId", userId);
@@ -147,7 +150,7 @@ public class UserController {
 
 	@PostMapping("/users/{userId}/accounts/{accountId}/save")
 	public String saveAccount(@PathVariable Long userId, @PathVariable Long accountId, @ModelAttribute Account account) {
-	    account.setAccountId(accountId); 
+		account.setAccountId(accountId); 
 	    userService.saveAccount(account); 
 	    return "redirect:/users/" + userId; 
 	}
@@ -182,6 +185,7 @@ public class UserController {
 	public String showAccountForm(@PathVariable Long userId, @PathVariable Long accountId, Model model) {
 		System.out.println("showAccountForm");
 		User user = userService.findById(userId);
+		System.out.println("User fetched: " + user);
 	    Account account = userService.findByAccountId(accountId);
 	    
 	    model.addAttribute("user", user);
