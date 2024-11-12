@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.OneToMany;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +29,9 @@ public class UserService {
 	@Autowired
 	private AddressRepository addressRepo;
 	
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+	private List<Account> accounts = new ArrayList<>();
+
 	
 	public List<User> findByUsername(String username) {
 		return userRepo.findByUsername(username);
@@ -71,21 +77,20 @@ public class UserService {
 	    return accountRepo.findById(accountId).orElse(new Account());
 	}
 
-	public Account createAccountForUser(Long userId) {
+	public Account createAccountForUser(Long userId, String accountName) {
 	    User user = userRepo.findById(userId)
 	            .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
 
 	    Account newAccount = new Account();
-	    newAccount.setAccountName("New Account");
-
+	    newAccount.setAccountName(accountName); 
 
 	    List<User> users = new ArrayList<>();
 	    users.add(user);
 	    newAccount.setUsers(users);
 
-	    
 	    return accountRepo.save(newAccount);
 	}
+
 
 
 
@@ -186,17 +191,23 @@ public class UserService {
 	    accountRepo.save(account);
 	}
 
-	public void saveAccount(Long accountId, Account account) {
-	   
-	    Account existingAccount = accountRepo.findById(accountId)
-	        .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+	public void saveAccount(Long userId, Account account) {
+	    User user = userRepo.findById(userId).orElseThrow(() -> 
+	        new RuntimeException("User not found with ID: " + userId)
+	    );
+
+	    
+	    account.getUsers().add(user);
 
 	   
-	    existingAccount.setAccountName(account.getAccountName());
+	    user.getAccounts().add(account);
+
+	    
+	    userRepo.save(user);
+	}
 
 	
-	    accountRepo.save(existingAccount); 
-	}	
+
 	
 	public Account saveAccount(Account account) {
 		
