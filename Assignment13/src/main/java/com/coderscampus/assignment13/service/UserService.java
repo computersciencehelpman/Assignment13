@@ -196,13 +196,12 @@ public class UserService {
 	        new RuntimeException("User not found with ID: " + userId)
 	    );
 
-	    
-	    account.getUsers().add(user);
-
-	   
-	    user.getAccounts().add(account);
-
-	    
+	    if (!user.getAccounts().contains(account)) {
+	        account.getUsers().add(user); // Associate user with account
+	        user.getAccounts().add(account); // Add account to user's account list
+	    }
+	  
+	    accountRepo.save(account);
 	    userRepo.save(user);
 	}
 
