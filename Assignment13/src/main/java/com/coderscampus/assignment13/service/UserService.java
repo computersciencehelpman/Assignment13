@@ -195,12 +195,20 @@ public class UserService {
 	    User user = userRepo.findById(userId).orElseThrow(() -> 
 	        new RuntimeException("User not found with ID: " + userId)
 	    );
-
-	    if (!user.getAccounts().contains(account)) {
-	        account.getUsers().add(user); // Associate user with account
-	        user.getAccounts().add(account); // Add account to user's account list
+	    
+	    Optional<Account> existingAccountOpt = user.getAccounts().stream()
+	            .filter(a -> a.getAccountId() != null && a.getAccountId().equals(account.getAccountId()))
+	            .findFirst();
+	    
+	    if (existingAccountOpt.isPresent()) {
+	        Account existingAccount = existingAccountOpt.get();
+	        existingAccount.setAccountName(account.getAccountName());
+	    } else {
+	        // Add the new account to the user's account list and associate the user
+	        account.getUsers().add(user);
+	        user.getAccounts().add(account); // Adds the new account to the end of the list
 	    }
-	  
+
 	    accountRepo.save(account);
 	    userRepo.save(user);
 	}
