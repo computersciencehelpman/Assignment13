@@ -7,10 +7,13 @@ import java.util.Optional;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
+import javax.persistence.EntityManager;
 import javax.persistence.OneToMany;
+import javax.persistence.PersistenceContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.coderscampus.assignment13.domain.Account;
 import com.coderscampus.assignment13.domain.Address;
@@ -19,8 +22,12 @@ import com.coderscampus.assignment13.repository.AccountRepository;
 import com.coderscampus.assignment13.repository.AddressRepository;
 import com.coderscampus.assignment13.repository.UserRepository;
 
+
 @Service
 public class UserService {
+	
+	@PersistenceContext
+	private EntityManager entityManager;
 	
 	@Autowired
 	private UserRepository userRepo;
@@ -32,7 +39,6 @@ public class UserService {
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
 	private List<Account> accounts = new ArrayList<>();
 
-	
 	public List<User> findByUsername(String username) {
 		return userRepo.findByUsername(username);
 	}
@@ -61,18 +67,46 @@ public class UserService {
 		return userRepo.findAllUsersWithAccountsAndAddresses();
 	}
 	
-	public User findById(Long userId) {
-		Optional<User> userOpt = userRepo.findById(userId);
-		User user = userOpt.orElse(new User());
-		
-		if(user.getAddress() == null) {
-			Address newAddress = new Address();
-			newAddress.setUser(user);
-			user.setAddress(newAddress);
-		}
-		return user;
+	@Transactional
+	public void updateAddress(Address updatedAddress) {
+	    Long userId = updatedAddress.getUser() != null ? updatedAddress.getUser().getUserId() : null;
+	    System.out.println("Saving address: " + updatedAddress);
+	    System.out.println("User associated: " + userId);
+	    if (userId != null) {
+	        Optional<Address> existingAddressOpt = addressRepo.findByUser_UserId(userId);
+	        if (existingAddressOpt.isPresent()) {
+	            Address existingAddress = existingAddressOpt.get();
+	            
+	            existingAddress.setAddressLine1(updatedAddress.getAddressLine1());
+	            existingAddress.setAddressLine2(updatedAddress.getAddressLine2());
+	            existingAddress.setCity(updatedAddress.getCity());
+	            existingAddress.setRegion(updatedAddress.getRegion());
+	            existingAddress.setZipCode(updatedAddress.getZipCode());
+	            existingAddress.setCountry(updatedAddress.getCountry());
+	            addressRepo.save(existingAddress);
+	        } else {
+	            
+	            updatedAddress.setUser(userRepo.findById(userId).orElseThrow());
+	            addressRepo.save(updatedAddress);
+	        }
+	    }
 	}
-	
+
+	public User findById(Long userId) {
+	    Optional<User> userOpt = userRepo.findById(userId);
+	    User user = userOpt.orElse(new User());
+
+	    if (user.getAddress() == null) {
+	        Address newAddress = new Address();
+	        newAddress.setUser(user);
+	        user.setAddress(newAddress);
+	       
+	        addressRepo.save(newAddress); 
+	    }
+	    
+	    return user;
+	}
+
 	public Account findByAccountId(Long accountId) {
 	    return accountRepo.findById(accountId).orElse(new Account());
 	}
@@ -91,32 +125,6 @@ public class UserService {
 	    return accountRepo.save(newAccount);
 	}
 
-
-
-
-//	   public Account createAccountForUser(Long userId) {
-//	       
-//	        Optional<User> optionalUser = userRepo.findById(userId);
-//
-//	        if (optionalUser.isPresent()) {
-//	            User user = optionalUser.get();
-//	            
-//	           
-//	            Account newAccount = new Account();
-//	            newAccount.setAccountName("New Account"); 
-//	            
-//	            List<User> users = new ArrayList<>();
-//	            users.add(user);
-//	            newAccount.setUsers(users);
-//	            
-//	            
-//	            accountRepo.save(newAccount);
-//	            
-//	            return newAccount;
-//	        } else {
-//	            throw new RuntimeException("User not found with ID: " + userId);
-//	        }
-//	    }
 	   public User saveUser(User user) {
 		    if (user.getUserId() != null) {
 		     
@@ -129,7 +137,7 @@ public class UserService {
 
 		        
 		        if (user.getAddress() != null) {
-		            user.getAddress().setUser(existingUser);
+		            user.getAddress().setUser(user);
 		            addressRepo.save(user.getAddress());
 		        }
 
@@ -159,28 +167,10 @@ public class UserService {
 		    }
 		}
 
-
 	public void delete(Long userId) {
 		userRepo.deleteById(userId);
 	}
 	
-//	public void saveAccount(Long accountId, Account account) {
-//		System.out.println("Saving account: " + account);
-//        Account existingAccount = accountRepo.findById(accountId)
-//            .orElseThrow(() -> new IllegalArgumentException("Account not found"));
-//        existingAccount.setAccountName(account.getAccountName()); 
-//        accountRepo.save(existingAccount); 
-//        
-//        User user= userRepo.findById(accountId)
-//				 .orElseThrow(() -> new RuntimeException("User not found"));
-//
-//        List<User> users = new ArrayList<>();
-//        users.add(user);
-//        account.setUsers(users);
-//
-//        accountRepo.save(account);
-//    }
-//	
 	public void saveOrUpdateAccount(Long userId, Account account) {
 	    User user = userRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -204,26 +194,20 @@ public class UserService {
 	        Account existingAccount = existingAccountOpt.get();
 	        existingAccount.setAccountName(account.getAccountName());
 	    } else {
-	        // Add the new account to the user's account list and associate the user
+	       
 	        account.getUsers().add(user);
-	        user.getAccounts().add(account); // Adds the new account to the end of the list
+	        user.getAccounts().add(account); 
 	    }
 
 	    accountRepo.save(account);
 	    userRepo.save(user);
 	}
 
-	
-
-	
 	public Account saveAccount(Account account) {
-		
 		return accountRepo.save(account);
 	}
 	
-
 	public Account updateAccount(Long userId, Long accountId, Account account) {
 		return accountRepo.save(account);
-		
 	}
 }

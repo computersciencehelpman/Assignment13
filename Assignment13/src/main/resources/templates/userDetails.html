@@ -51,47 +51,48 @@
     <h1>User Details</h1>
 
     
-    <form th:action="@{/users/{userId}/update}" th:object="${user}" method="post">
-        <input type="hidden" th:field="*{userId}" />
-        <div>
-            <label>Username:</label> 
-            <input type="text" th:field="${user.username}" />
-        </div>
-        <div>
-            <label>Password:</label>
-            <input type="password" th:field="${user.password}" />
-        </div>
-        <div>
-            <label>Full Name:</label>
-            <input type="text" th:field="${user.name}" />
-        </div>
-        <hr/>
-        <div>
-            <label>Address Line 1:</label> 
-            <input type="text" th:field="${user.address.addressLine1}" />
-        </div>
-        <div>
-            <label>Address Line 2:</label> 
-            <input type="text" th:field="${user.address.addressLine2}" />
-        </div>
-        <div>
-            <label>City:</label> 
-            <input type="text" th:field="${user.address.city}" />
-        </div>
-        <div>
-            <label>Region:</label> 
-            <input type="text" th:field="${user.address.region}" />
-        </div>
-        <div>
-            <label>Country:</label> 
-            <input type="text" th:field="${user.address.country}" />
-        </div>
-        <div>
-            <label>Zip Code:</label> 
-            <input type="text" th:field="${user.address.zipCode}" />
-        </div>
-        <button type="submit">Update User Account</button> 
-    </form>
+   <form th:action="@{/users/{userId}/update(userId=${user.userId})}" th:object="${user}" method="post">
+    	<input type="hidden" th:field="*{userId}" />
+    	<div>
+        	<label>Username:</label>
+        	<input type="text" th:field="*{username}" />
+    	</div>
+    	<div>
+        	<label>Password:</label>
+        	<input type="password" th:field="*{password}" />
+    	</div>
+    	<div>
+        	<label>Full Name:</label>
+        	<input type="text" th:field="*{name}" />
+    	</div>
+    	<hr/>
+    	<div>
+        	<label>Address Line 1:</label>
+        	<input type="text" th:field="*{address.addressLine1}" />
+    	</div>
+    	<div>
+        	<label>Address Line 2:</label>
+        	<input type="text" th:field="*{address.addressLine2}" />
+    	</div>
+    	<div>
+        	<label>City:</label>
+        	<input type="text" th:field="*{address.city}" />
+    	</div>
+    	<div>
+        	<label>Region:</label>
+        	<input type="text" th:field="*{address.region}" />
+    	</div>
+    	<div>
+        	<label>Country:</label>
+        	<input type="text" th:field="*{address.country}" />
+    	</div>
+    	<div>
+        	<label>Zip Code:</label>
+        	<input type="text" th:field="*{address.zipCode}" />
+    	</div>
+    	<button type="submit">Update User Account</button>
+	</form>
+    
 
     <form th:action="@{/users/{userId}/delete(userId=${user.userId})}" method="post">
         <input type="submit" value="Delete User Account" />

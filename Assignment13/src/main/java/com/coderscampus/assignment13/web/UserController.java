@@ -1,7 +1,6 @@
 package com.coderscampus.assignment13.web;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,9 +40,6 @@ public class UserController {
 	    System.out.println("account page reached/not reached");
 	    return "account"; 
 	}
-
-
-
 	
 	@PostMapping("/register")
 	public String postCreateUser (User user) {
@@ -69,13 +65,20 @@ public class UserController {
 	    User existingUser = userService.findById(userId);
 	    existingUser.setUsername(user.getUsername());
 	    existingUser.setName(user.getName());
-	    userService.saveUser(existingUser);
+	    userService.saveUser(user);
 	    System.out.println("Updating user "+ userId);
 	    return "redirect:/users";
 	}
 
+	@PostMapping("/users/{userId}/updateAddress")
+	public String updateAddress(@PathVariable Long userId, @ModelAttribute Address address) {
+	    User user = userService.findById(userId);
+	    address.setUser(user);
+		userService.updateAddress(address); 
+		System.out.println("Update User Account Button Clicked");
+	    return "redirect:/users/" + userId;
+	}
 
-	
 	@GetMapping("/users/{userId}")
 	public String getOneUser(ModelMap model, @PathVariable Long userId) {
 	    User user = userService.findById(userId);
@@ -95,7 +98,6 @@ public class UserController {
 	    return "userDetails";  
 	}
 
-	
 	@PostMapping("/users/{userId}")
 	public String postOneUser (@PathVariable Long userId, @ModelAttribute User user) {
 		user.setUserId(userId); 
@@ -130,8 +132,6 @@ public class UserController {
 	    return "redirect:/users/" + userId;
 	}
 
-
-	
 	@GetMapping("/users/{userId}/accounts/{accountId}/details")
 	public String showAccountDetails(@PathVariable Long userId, @PathVariable Long accountId, Model model) {
 		System.out.println("userId: " + userId);
@@ -143,13 +143,6 @@ public class UserController {
 		return "account";
 	}
 	
-//	@PostMapping("/users/{userId}/accounts/{accountId}/save")
-//	public String saveAccount(@PathVariable Long userId, @PathVariable Long accountId, @ModelAttribute Account account) {
-//	    userService.saveAccount(account);
-//	    System.out.println("Account saved successfully for account ID: " + accountId);
-//	    return "redirect:/users/" + userId; 
-//	}
-
 	@PostMapping("/users/{userId}/accounts/{accountId}/save")
 	public String saveAccount(@PathVariable Long userId, @PathVariable Long accountId, @ModelAttribute Account account) {
 		System.out.println("Saving Account");
@@ -158,15 +151,6 @@ public class UserController {
 	    System.out.println("Saved account: "+account);
 	    return "redirect:/users/" + userId; 
 	}
-
-	
-	
-//	@PostMapping("/users/{userId}/accounts/{accountId}/save")
-//	public String saveAccount(@PathVariable Long userId, @PathVariable Long accountId, @ModelAttribute Account account) {
-//	    userService.saveAccount(account);
-//	    System.out.println("Account saved successfully for account ID: " + accountId);
-//	    return "redirect:/users/" + userId;
-//	}
 	
 	@PostMapping("/users/save")
 	public String saveUser(@ModelAttribute User user) {
@@ -174,16 +158,6 @@ public class UserController {
 	    System.out.println("User saved successfully for user ID: " + user.getUserId());
 	    return "redirect:/users";
 	}
-
-
-//	@PostMapping("/users/save")
-//	public String saveUser(@PathVariable Long userId, @PathVariable Long accountId, @ModelAttribute Account account) {
-//		User user = new User();
-//		user.setUserId(userId);
-//		userService.saveAccount(account);
-//		System.out.println("Account saved successfully for user ID: " + userId);
-//		return "redirect:/users";
-//	}
 
 	@GetMapping("/users/{userId}/accounts/{accountId}")
 	public String showAccountForm(@PathVariable Long userId, @PathVariable Long accountId, Model model) {
@@ -231,6 +205,4 @@ public class UserController {
 	        return "redirect:/users/" + userId + "/accounts/" + accountId;
 	    }
 	}
-
-
 }
