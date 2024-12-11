@@ -1,20 +1,16 @@
 package com.coderscampus.assignment13.service;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
-import javax.persistence.EntityManager;
-import javax.persistence.OneToMany;
-import javax.persistence.PersistenceContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.coderscampus.assignment13.ResourceNotFoundException;
 import com.coderscampus.assignment13.domain.Account;
 import com.coderscampus.assignment13.domain.Address;
 import com.coderscampus.assignment13.domain.User;
@@ -22,192 +18,140 @@ import com.coderscampus.assignment13.repository.AccountRepository;
 import com.coderscampus.assignment13.repository.AddressRepository;
 import com.coderscampus.assignment13.repository.UserRepository;
 
-
 @Service
 public class UserService {
-	
-	@PersistenceContext
-	private EntityManager entityManager;
-	
-	@Autowired
-	private UserRepository userRepo;
-	@Autowired
-	private AccountRepository accountRepo;
-	@Autowired
-	private AddressRepository addressRepo;
-	
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-	private List<Account> accounts = new ArrayList<>();
 
-	public List<User> findByUsername(String username) {
-		return userRepo.findByUsername(username);
-	}
-	
-	public List<Account> findByAccountName(String accountName){
-		return accountRepo.findByAccountName(accountName);
-	}
-	
-	public List<User> findByNameAndUsername(String name, String username) {
-		return userRepo.findByNameAndUsername(name, username);
-	}
-	
-	public List<User> findByCreatedDateBetween(LocalDate date1, LocalDate date2) {
-		return userRepo.findByCreatedDateBetween(date1, date2);
-	}
-	
-	public User findExactlyOneUserByUsername(String username) {
-		List<User> users = userRepo.findExactlyOneUserByUsername(username);
-		if (users.size() > 0)
-			return users.get(0);
-		else
-			return new User();
-	}
-	
-	public Set<User> findAll () {
-		return userRepo.findAllUsersWithAccountsAndAddresses();
-	}
-	
-	@Transactional
-	public void updateAddress(Address updatedAddress) {
-	    Long userId = updatedAddress.getUser() != null ? updatedAddress.getUser().getUserId() : null;
-	    System.out.println("Saving address: " + updatedAddress);
-	    System.out.println("User associated: " + userId);
-	    if (userId != null) {
-	        Optional<Address> existingAddressOpt = addressRepo.findByUser_UserId(userId);
-	        if (existingAddressOpt.isPresent()) {
-	            Address existingAddress = existingAddressOpt.get();
-	            
-	            existingAddress.setAddressLine1(updatedAddress.getAddressLine1());
-	            existingAddress.setAddressLine2(updatedAddress.getAddressLine2());
-	            existingAddress.setCity(updatedAddress.getCity());
-	            existingAddress.setRegion(updatedAddress.getRegion());
-	            existingAddress.setZipCode(updatedAddress.getZipCode());
-	            existingAddress.setCountry(updatedAddress.getCountry());
-	            addressRepo.save(existingAddress);
-	        } else {
-	            
-	            updatedAddress.setUser(userRepo.findById(userId).orElseThrow());
-	            addressRepo.save(updatedAddress);
-	        }
-	    }
-	}
+    private final UserRepository userRepo;
+    private final AccountRepository accountRepo;
+    private final AddressRepository addressRepo;
 
-	public User findById(Long userId) {
-	    Optional<User> userOpt = userRepo.findById(userId);
-	    User user = userOpt.orElse(new User());
+    @Autowired
+    public UserService(UserRepository userRepo, AccountRepository accountRepo, AddressRepository addressRepo) {
+        this.userRepo = userRepo;
+        this.accountRepo = accountRepo;
+        this.addressRepo = addressRepo;
+    }
 
-	    if (user.getAddress() == null) {
-	        Address newAddress = new Address();
-	        newAddress.setUser(user);
-	        user.setAddress(newAddress);
-	       
-	        addressRepo.save(newAddress); 
-	    }
-	    
-	    return user;
-	}
+    public User findById(Long userId) {
+        return userRepo.findById(userId)
+                .orElseThrow();
+    }
 
-	public Account findByAccountId(Long accountId) {
-	    return accountRepo.findById(accountId).orElse(new Account());
-	}
+    public Set<User> findAll() {
+        return userRepo.findAllUsersWithAccountsAndAddress(); 
+    }
 
-	public Account createAccountForUser(Long userId, String accountName) {
-	    User user = userRepo.findById(userId)
-	            .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+    public List<User> findByUsername(String username) {
+        return userRepo.findByUsername(username);
+    }
 
-	    Account newAccount = new Account();
-	    newAccount.setAccountName(accountName); 
+    @Transactional
+    public void saveUser(User user) {
+        userRepo.save(user);
+    }
 
-	    List<User> users = new ArrayList<>();
-	    users.add(user);
-	    newAccount.setUsers(users);
+    @Transactional
+    public void deleteUser(Long userId) {
+        User user = userRepo.findById(userId).orElseThrow(() -> 
+            new ResourceNotFoundException("User not found for ID: " + userId));
+        
+        List<Account> accounts = new ArrayList<>(user.getAccounts()); 
+        for (Account account : accounts) {
+            account.setUser(null); 
+            accountRepo.delete(account); 
+        }
+        user.getAccounts().clear(); 
+      
+        if (user.getAddress() != null) {
+            addressRepo.delete(user.getAddress());
+            user.setAddress(null);
+        }
 
-	    return accountRepo.save(newAccount);
-	}
+        userRepo.delete(user);
+    }
 
-	   public User saveUser(User user) {
-		    if (user.getUserId() != null) {
-		     
-		        User existingUser = userRepo.findById(user.getUserId()).orElseThrow(() -> new RuntimeException("User not found"));
+    @Transactional
+    public void updateAddress(Address updatedAddress) {
+        if (updatedAddress.getUser() == null || updatedAddress.getUser().getUserId() == null) {
+            throw new IllegalArgumentException("Address must be linked to a valid user.");
+        }
 
-		        
-		        existingUser.setUsername(user.getUsername());
-		        existingUser.setName(user.getName());
-	
+        Long userId = updatedAddress.getUser().getUserId();
+        User user = findById(userId);
 
-		        
-		        if (user.getAddress() != null) {
-		            user.getAddress().setUser(user);
-		            addressRepo.save(user.getAddress());
-		        }
+        Address existingAddress = user.getAddress();
+        if (existingAddress == null) {
+            updatedAddress.setUser(user);
+            user.setAddress(updatedAddress);
+            addressRepo.save(updatedAddress);
+        } else {
+            existingAddress.setAddressLine1(updatedAddress.getAddressLine1());
+            existingAddress.setAddressLine2(updatedAddress.getAddressLine2());
+            existingAddress.setCity(updatedAddress.getCity());
+            existingAddress.setRegion(updatedAddress.getRegion());
+            existingAddress.setZipCode(updatedAddress.getZipCode());
+            existingAddress.setCountry(updatedAddress.getCountry());
+            addressRepo.save(existingAddress);
+        }
+    }
 
-		        return userRepo.save(existingUser);
-		    } else {
-		       
-		        if (user.getAddress() != null) {
-		            user.getAddress().setUser(user);
-		            addressRepo.save(user.getAddress());
-		        }
+    
+    @Transactional
+    public Account createAccountForUser(Long userId, String accountName) {
+        User user = findById(userId); 
+        Account account = new Account();
+        account.setAccountName(accountName);
+        account.setUser(user); 
 
-		        Account checking = new Account();
-		        checking.setAccountName("Checking Account");
-		        checking.getUsers().add(user);
+        user.getAccounts().add(account);  
+        return accountRepo.save(account); 
+    }
 
-		        Account savings = new Account();
-		        savings.setAccountName("Savings Account");
-		        savings.getUsers().add(user);
+    @Transactional
+    public void saveAccountForUser(User user, Account account) {
+       
+        account.setUser(user); 
+        user.getAccounts().add(account);
 
-		        user.getAccounts().add(checking);
-		        user.getAccounts().add(savings);
+        accountRepo.save(account); 
+        userRepo.save(user);       
+    }
 
-		        accountRepo.save(checking);
-		        accountRepo.save(savings);
+    @Transactional
+    public void updateUserAccounts(Long userId) {
+        User user = userRepo.findById(userId).orElseThrow();
+        List<Account> accounts = user.getAccounts();
+        accounts.add(new Account());
+    }
 
-		        return userRepo.save(user);
-		    }
-		}
+    @Transactional
+    public void saveOrUpdateAccount(Long userId, Account account) {
+        User user = findById(userId); 
+        Optional<Account> existingAccountOpt = user.getAccounts().stream()
+                .filter(a -> a.getAccountId().equals(account.getAccountId()))
+                .findFirst();
+        
+        if (existingAccountOpt.isPresent()) {
+            Account existingAccount = existingAccountOpt.get();
+            existingAccount.setAccountName(account.getAccountName());
+        } else {
+            account.getUser();
+            user.getAccounts().add(account);
+        }
+        
+        accountRepo.save(account);
+    }
 
-	public void delete(Long userId) {
-		userRepo.deleteById(userId);
-	}
-	
-	public void saveOrUpdateAccount(Long userId, Account account) {
-	    User user = userRepo.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+    public Long getLastAccountId() {
+        return accountRepo.findMaxAccountId(); 
+    }
 
-	    List<User> users = new ArrayList<>(account.getUsers());
-	    users.add(user);
-	    account.setUsers(users);
+    public Account findByAccountId(Long accountId) {
+        return accountRepo.findById(accountId).orElseThrow(() -> 
+            new ResourceNotFoundException("Account not found for ID: " + accountId));
+    }
 
-	    accountRepo.save(account);
-	}
-
-	public void saveAccount(Long userId, Account account) {
-	    User user = userRepo.findById(userId).orElseThrow(() -> 
-	        new RuntimeException("User not found with ID: " + userId)
-	    );
-	    
-	    Optional<Account> existingAccountOpt = user.getAccounts().stream()
-	            .filter(a -> a.getAccountId() != null && a.getAccountId().equals(account.getAccountId()))
-	            .findFirst();
-	    
-	    if (existingAccountOpt.isPresent()) {
-	        Account existingAccount = existingAccountOpt.get();
-	        existingAccount.setAccountName(account.getAccountName());
-	    } else {
-	       
-	        account.getUsers().add(user);
-	        user.getAccounts().add(account); 
-	    }
-
-	    accountRepo.save(account);
-	    userRepo.save(user);
-	}
-
-	public Account saveAccount(Account account) {
-		return accountRepo.save(account);
-	}
-	
-	public Account updateAccount(Long userId, Long accountId, Account account) {
-		return accountRepo.save(account);
-	}
+    public Set<User> findAllUsersWithAccountsAndAddress() {
+        return userRepo.findAllUsersWithAccountsAndAddress();
+    }
 }
